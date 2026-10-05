@@ -92,6 +92,8 @@ O relatório de cobertura é gerado em `target/site/jacoco/index.html`.
 ```
 .
 ├── .github/workflows/ci.yml   # pipeline de integração contínua
+├── .mvn/wrapper/              # configuração do Maven Wrapper
+├── mvnw / mvnw.cmd            # Maven Wrapper (Linux/macOS e Windows)
 ├── src/main/java/             # código-fonte
 ├── src/test/java/             # testes unitários
 ├── pom.xml                    # build Maven, JUnit, JaCoCo, SonarCloud
