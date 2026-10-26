@@ -11,7 +11,7 @@ RESUMO=${GITHUB_STEP_SUMMARY:-/dev/stdout}
 TENTATIVAS=60
 INTERVALO=5
 
-if [ ! -f "$RELATORIO" ]; then
+if [[ ! -f "$RELATORIO" ]]; then
   echo "::error::$RELATORIO não encontrado: a análise não foi enviada ao SonarCloud."
   exit 1
 fi
@@ -38,7 +38,7 @@ for _ in $(seq "$TENTATIVAS"); do
   esac
   sleep "$INTERVALO"
 done
-if [ "$STATUS_TAREFA" != SUCCESS ]; then
+if [[ "$STATUS_TAREFA" != SUCCESS ]]; then
   echo "::error::Tempo esgotado aguardando o SonarCloud processar a análise."
   exit 1
 fi
@@ -49,7 +49,7 @@ api "$SERVIDOR/api/qualitygates/project_status?analysisId=$ANALISE" > "$SAIDA/qu
 GATE=$(jq -r '.projectStatus.status' "$SAIDA/quality-gate.json")
 
 # 3. Métricas da branch ou do pull request analisado.
-if [ -n "${PULL_REQUEST:-}" ]; then
+if [[ -n "${PULL_REQUEST:-}" ]]; then
   ESCOPO="pullRequest=$PULL_REQUEST"
 else
   ESCOPO="branch=${GITHUB_REF_NAME:-main}"
@@ -66,7 +66,7 @@ nota() {
   esac
 }
 
-if [ "$GATE" = OK ]; then ICONE="✅ APROVADO"; else ICONE="❌ REPROVADO ($GATE)"; fi
+if [[ "$GATE" == OK ]]; then ICONE="✅ APROVADO"; else ICONE="❌ REPROVADO ($GATE)"; fi
 
 {
   echo "## Quality gate SonarCloud: $ICONE"
@@ -95,7 +95,7 @@ if [ "$GATE" = OK ]; then ICONE="✅ APROVADO"; else ICONE="❌ REPROVADO ($GATE
     "$SAIDA/quality-gate.json"
 } >> "$RESUMO"
 
-if [ "$GATE" != OK ]; then
+if [[ "$GATE" != OK ]]; then
   echo "::error::Quality gate reprovado ($GATE). Detalhes: $PAINEL"
   exit 1
 fi
