@@ -9,12 +9,26 @@ Projeto da **A3 – Gestão e Qualidade de Software** (UNISUL, prof. Jorge Werne
 | Nome | RA | Papel | GitHub |
 |------|----|-------|--------|
 | Heitor Della Barba Westphal | 1072410915 | Líder de equipe | [@HeitorWestphal](https://github.com/HeitorWestphal) |
-| João Víctor Muniz da Silva | 1072413992 | _a definir_ | _a definir_ |
-| Ian Santiago Silveira | 1072410937 | _a definir_ | _a definir_ |
-| João Gabriel Weber dos Santos Verona | 10724265816 | _a definir_ | _a definir_ |
-| Bruno Hudson Siebert Costa | 1072419878 | _a definir_ | _a definir_ |
+| João Víctor Muniz da Silva | 1072413992 | Desenvolvedor | _a definir_ |
+| Ian Santiago Silveira | 1072410937 | Desenvolvedor | _a definir_ |
+| João Gabriel Weber dos Santos Verona | 10724265816 | Testador | _a definir_ |
+| Bruno Hudson Siebert Costa | 1072419878 | Especialista em DevOps | _a definir_ |
 
 > Todos os integrantes são programadores e desenvolvem testes unitários das suas funcionalidades.
+
+## Divisão das funcionalidades
+
+Cada integrante implementa e testa a sua funcionalidade e faz os commits com a própria conta do GitHub.
+
+| Aluno | Funcionalidade | Testes unitários |
+|-------|----------------|------------------|
+| Heitor Della Barba Westphal | RF01 – Cadastrar livro (RN01) | [IsbnTest](src/test/java/br/unisul/a3/biblioteca/dominio/IsbnTest.java), [LivroTest](src/test/java/br/unisul/a3/biblioteca/dominio/LivroTest.java), [LivroRepositorioTest](src/test/java/br/unisul/a3/biblioteca/repositorio/LivroRepositorioTest.java), [LivroServiceTest](src/test/java/br/unisul/a3/biblioteca/servico/LivroServiceTest.java) |
+| João Víctor Muniz da Silva | RF02 – Cadastrar leitor | _em desenvolvimento_ |
+| Ian Santiago Silveira | RF03 – Consultar acervo + menu da aplicação | _em desenvolvimento_ |
+| João Gabriel Weber dos Santos Verona | RF04 – Registrar empréstimo (RN02 a RN05) | _em desenvolvimento_ |
+| Bruno Hudson Siebert Costa | RF05 – Registrar devolução e multa (RN06) + SonarCloud | _em desenvolvimento_ |
+
+O planejamento completo dos testes está em [docs/plano-de-testes.md](docs/plano-de-testes.md).
 
 ## Problema atendido
 
@@ -94,6 +108,8 @@ O relatório de cobertura é gerado em `target/site/jacoco/index.html`.
 ├── .github/workflows/ci.yml   # pipeline de integração contínua
 ├── .mvn/wrapper/              # configuração do Maven Wrapper
 ├── mvnw / mvnw.cmd            # Maven Wrapper (Linux/macOS e Windows)
+├── .github/scripts/           # script de verificação do quality gate
+├── docs/                      # plano de testes, SonarCloud e registro de qualidade
 ├── src/main/java/             # código-fonte
 ├── src/test/java/             # testes unitários
 ├── pom.xml                    # build Maven, JUnit, JaCoCo, SonarCloud
