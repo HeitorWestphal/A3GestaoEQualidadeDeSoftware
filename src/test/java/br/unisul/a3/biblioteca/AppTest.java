@@ -1,5 +1,6 @@
 package br.unisul.a3.biblioteca;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,6 @@ class AppTest {
 
     @Test
     void mainDeveExecutarSemErros() {
-        App.main(new String[0]);
+        assertDoesNotThrow(() -> App.main(new String[0]));
     }
 }
