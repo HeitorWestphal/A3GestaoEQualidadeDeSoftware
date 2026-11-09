@@ -15,8 +15,9 @@ As notas vão de A (melhor) a E (pior). Bugs, vulnerabilidades e code smells con
 | 2 | 26/10/2026 | PR #11 (`c4014a8`) | [40421111136](https://github.com/HeitorWestphal/A3GestaoEQualidadeDeSoftware/actions/runs/40421111136) | ✅ Aprovado | 99,2% | A | A | A (0 code smells no código novo) | 0,0% | — |
 | 3 | 09/11/2026 | `28ac81d` (`main`, merge do PR #11) | [42714297226](https://github.com/HeitorWestphal/A3GestaoEQualidadeDeSoftware/actions/runs/42714297226) | ✅ Aprovado | 99,2% | **D** (2 bugs) | A (0 vulnerabilidades, 0 hotspots) | A (1 code smell) | 0,0% | 47 / 23 |
 | 4 | 09/11/2026 | PR #12 (`6d83d22`) | [42714590543](https://github.com/HeitorWestphal/A3GestaoEQualidadeDeSoftware/actions/runs/42714590543) | ✅ Aprovado | 99,2% | A (0 bugs) | A | A (0 code smells) | 0,0% | — |
+| 5 | 09/11/2026 | `543f65a` (`main`, merge do PR #12) | [42715498535](https://github.com/HeitorWestphal/A3GestaoEQualidadeDeSoftware/actions/runs/42715498535) | ✅ Aprovado | 99,2% | **A** (0 bugs) | A (0 vulnerabilidades, 0 hotspots) | **A** (0 code smells) | 0,0% | 47 / 23 |
 
-A análise 3 é a primeira da versão integrada na `main` com o job de quality gate. O gate passou porque o código novo estava limpo, mas o código existente ainda tinha confiabilidade **D** por causa de dois bugs nos testes. O PR #12 corrige esses problemas.
+A análise 3 é a primeira da versão integrada na `main` com o job de quality gate. O gate passou porque o código novo estava limpo, mas o código existente ainda tinha confiabilidade **D** por causa de dois bugs nos testes. O PR #12 corrigiu esses problemas. Na análise 5, a versão integrada da `main` ficou com **nota A em confiabilidade, segurança e manutenibilidade e nenhum problema aberto** no SonarCloud.
 
 ## Problemas encontrados e correções
 
