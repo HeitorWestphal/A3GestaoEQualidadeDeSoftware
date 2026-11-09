@@ -9,10 +9,10 @@ Projeto da **A3 – Gestão e Qualidade de Software** (UNISUL, prof. Jorge Werne
 | Nome | RA | Papel | GitHub |
 |------|----|-------|--------|
 | Heitor Della Barba Westphal | 1072410915 | Líder de equipe | [@HeitorWestphal](https://github.com/HeitorWestphal) |
-| João Víctor Muniz da Silva | 1072413992 | Desenvolvedor | _a definir_ |
-| Ian Santiago Silveira | 1072410937 | Desenvolvedor | _a definir_ |
-| João Gabriel Weber dos Santos Verona | 10724265816 | Testador | _a definir_ |
-| Bruno Hudson Siebert Costa | 1072419878 | Especialista em DevOps | _a definir_ |
+| João Víctor Muniz da Silva | 1072413992 | Desenvolvedor | [@Muniz2504](https://github.com/Muniz2504) |
+| Ian Santiago Silveira | 1072410937 | Desenvolvedor | [@SantiagoIanS](https://github.com/SantiagoIanS) |
+| João Gabriel Weber dos Santos Verona | 10724265816 | Testador | [@1Verona](https://github.com/1Verona) |
+| Bruno Hudson Siebert Costa | 1072419878 | Especialista em DevOps | [@BHSC1](https://github.com/BHSC1) |
 
 > Todos os integrantes são programadores e desenvolvem testes unitários das suas funcionalidades.
 
