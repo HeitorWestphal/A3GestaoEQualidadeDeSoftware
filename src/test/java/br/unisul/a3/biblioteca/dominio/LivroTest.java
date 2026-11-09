@@ -1,6 +1,7 @@
 package br.unisul.a3.biblioteca.dominio;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -22,7 +23,13 @@ class LivroTest {
 
         assertEquals(livro, mesmoIsbn);
         assertEquals(livro.hashCode(), mesmoIsbn.hashCode());
-        assertEquals(livro, livro);
+    }
+
+    @Test
+    void livroDeveSerIgualASiMesmo() {
+        Livro mesmaReferencia = livro;
+
+        assertEquals(livro, mesmaReferencia);
     }
 
     @Test
@@ -30,7 +37,15 @@ class LivroTest {
         Livro outro = new Livro("8535914846", "Dom Casmurro", "Machado de Assis", 1899, 2);
 
         assertNotEquals(livro, outro);
-        assertNotEquals(livro, "9788535914849");
+    }
+
+    @Test
+    void livroNaoDeveSerIgualAObjetoDeOutroTipo() {
+        Object isbnComoTexto = "9788535914849";
+
+        boolean igual = livro.equals(isbnComoTexto);
+
+        assertFalse(igual);
     }
 
     @Test
