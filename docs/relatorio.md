@@ -14,6 +14,7 @@
   - Ian Santiago Silveira (RA 1072410937)
   - João Gabriel Weber dos Santos Verona (RA 10724265816)
   - Bruno Hudson Siebert Costa (RA 1072419878)
+  - João Pedro Nobile dos Santos (RA 1072411014)
 - Título: **SISTEMA DE BIBLIOTECA: PLANO E EXECUÇÃO DE TESTES COM INTEGRAÇÃO CONTÍNUA E ANÁLISE ESTÁTICA**
 - Cidade, 2026
 
