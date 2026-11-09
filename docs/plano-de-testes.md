@@ -4,7 +4,7 @@
 
 ## 2.1 Objetivo do plano de testes
 
-Garantir que o Sistema de Biblioteca cumpre os requisitos funcionais (RF01 a RF05) e as regras de negócio (RN01 a RN06) descritos no [README](../README.md), com:
+Garantir que o Sistema de Biblioteca cumpre os requisitos funcionais (RF01 a RF06) e as regras de negócio (RN01 a RN06) descritos no [README](../README.md), com:
 
 - testes automatizados executados a cada alteração do código (integração contínua);
 - cobertura mínima de 75% do código-fonte;
@@ -23,6 +23,7 @@ Garantir que o Sistema de Biblioteca cumpre os requisitos funcionais (RF01 a RF0
 | Acervo | Consulta por título, autor e ISBN, disponibilidade | RF03 |
 | Empréstimos | Registro de empréstimo, limites e pendências | RF04, RN02 a RN05 |
 | Devoluções | Registro de devolução e cálculo de multa | RF05, RN06 |
+| Relatórios | Empréstimos em atraso e histórico do leitor | RF06 |
 | Integração | Fluxo completo cadastro → empréstimo → devolução | — |
 
 **Não será testado:**
@@ -108,6 +109,7 @@ Garantir que o Sistema de Biblioteca cumpre os requisitos funcionais (RF01 a RF0
 | Ian Santiago Silveira | Desenvolvedor | Consulta ao acervo e menu da aplicação |
 | João Gabriel Weber dos Santos Verona | Testador | Empréstimo e testes de integração do fluxo principal |
 | Bruno Hudson Siebert Costa | Especialista em DevOps | Devolução e multa, configuração do SonarCloud e do CI |
+| João Pedro Nobile dos Santos | Desenvolvedor | Relatório de empréstimos em atraso e histórico do leitor |
 
 Todos são programadores e escrevem os testes unitários da própria funcionalidade. A tabela aluno → funcionalidade → testes fica no [README](../README.md#divisão-das-funcionalidades).
 
