@@ -13,6 +13,7 @@ Projeto da **A3 – Gestão e Qualidade de Software** (UNISUL, prof. Jorge Werne
 | Ian Santiago Silveira | 1072410937 | Desenvolvedor | [@SantiagoIanS](https://github.com/SantiagoIanS) |
 | João Gabriel Weber dos Santos Verona | 10724265816 | Testador | [@1Verona](https://github.com/1Verona) |
 | Bruno Hudson Siebert Costa | 1072419878 | Especialista em DevOps | [@BHSC1](https://github.com/BHSC1) |
+| João Pedro Nobile dos Santos | 1072411014 | Desenvolvedor | [@jpzyn](https://github.com/jpzyn) |
 
 > Todos os integrantes são programadores e desenvolvem testes unitários das suas funcionalidades.
 
@@ -27,6 +28,7 @@ Cada integrante implementa e testa a sua funcionalidade e faz os commits com a p
 | Ian Santiago Silveira | RF03 – Consultar acervo + menu da aplicação | _em desenvolvimento_ |
 | João Gabriel Weber dos Santos Verona | RF04 – Registrar empréstimo (RN02 a RN05) | _em desenvolvimento_ |
 | Bruno Hudson Siebert Costa | RF05 – Registrar devolução e multa (RN06) + SonarCloud | _em desenvolvimento_ |
+| João Pedro Nobile dos Santos | RF06 – Consultar empréstimos em atraso e histórico do leitor | _em desenvolvimento_ |
 
 O planejamento completo dos testes está em [docs/plano-de-testes.md](docs/plano-de-testes.md).
 
@@ -58,6 +60,7 @@ Bibliotecas pequenas (escolares, comunitárias, de empresas) costumam controlar 
 - **RF03 – Consultar acervo:** buscar livros por título, autor ou ISBN, exibindo a disponibilidade.
 - **RF04 – Registrar empréstimo:** emprestar um exemplar disponível a um leitor, com data prevista de devolução.
 - **RF05 – Registrar devolução:** dar baixa no empréstimo e calcular multa por atraso, quando houver.
+- **RF06 – Consultar empréstimos em atraso:** listar empréstimos vencidos com dias de atraso e multa prevista, e o histórico de empréstimos de cada leitor.
 
 ### Regras de negócio
 
