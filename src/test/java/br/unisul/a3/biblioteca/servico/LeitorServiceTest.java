@@ -77,4 +77,19 @@ class LeitorServiceTest {
         assertEquals("E-mail inválido", erro.getMessage());
         assertTrue(repositorio.listarTodos().isEmpty());
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"52998224725", "529.982.247-25"})
+    void naoDeveAlterarLeitorExistenteAoCadastrarCpfDuplicado(String cpfDuplicado) {
+        service.cadastrar("Maria Souza", CPF, "maria@exemplo.com");
+
+        RegraNegocioException erro = assertThrows(RegraNegocioException.class,
+                () -> service.cadastrar("Outro Nome", cpfDuplicado, "outro@exemplo.com"));
+
+        assertEquals("Já existe um leitor cadastrado com este CPF", erro.getMessage());
+        assertEquals(1, repositorio.listarTodos().size());
+        Leitor original = repositorio.buscarPorCpf(CPF).orElseThrow();
+        assertEquals("Maria Souza", original.getNome());
+        assertEquals("maria@exemplo.com", original.getEmail());
+    }
 }
