@@ -24,7 +24,7 @@ Cada integrante implementa e testa a sua funcionalidade e faz os commits com a p
 | Aluno | Funcionalidade | Testes unitários |
 |-------|----------------|------------------|
 | Heitor Della Barba Westphal | RF01 – Cadastrar livro (RN01) | [IsbnTest](src/test/java/br/unisul/a3/biblioteca/dominio/IsbnTest.java), [LivroTest](src/test/java/br/unisul/a3/biblioteca/dominio/LivroTest.java), [LivroRepositorioTest](src/test/java/br/unisul/a3/biblioteca/repositorio/LivroRepositorioTest.java), [LivroServiceTest](src/test/java/br/unisul/a3/biblioteca/servico/LivroServiceTest.java) |
-| João Víctor Muniz da Silva | RF02 – Cadastrar leitor | _em desenvolvimento_ |
+| João Víctor Muniz da Silva | RF02 – Cadastrar leitor | [CpfTest](src/test/java/br/unisul/a3/biblioteca/dominio/CpfTest.java), [EmailTest](src/test/java/br/unisul/a3/biblioteca/dominio/EmailTest.java), [LeitorTest](src/test/java/br/unisul/a3/biblioteca/dominio/LeitorTest.java), [LeitorRepositorioTest](src/test/java/br/unisul/a3/biblioteca/repositorio/LeitorRepositorioTest.java), [LeitorServiceTest](src/test/java/br/unisul/a3/biblioteca/servico/LeitorServiceTest.java)|
 | Ian Santiago Silveira | RF03 – Consultar acervo + menu da aplicação | _em desenvolvimento_ |
 | João Gabriel Weber dos Santos Verona | RF04 – Registrar empréstimo (RN02 a RN05) | _em desenvolvimento_ |
 | Bruno Hudson Siebert Costa | RF05 – Registrar devolução e multa (RN06) + SonarCloud | _em desenvolvimento_ |
