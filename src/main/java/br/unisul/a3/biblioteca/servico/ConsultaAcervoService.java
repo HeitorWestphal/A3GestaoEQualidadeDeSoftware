@@ -28,4 +28,11 @@ public class ConsultaAcervoService {
                 .filter(livro -> livro.getTitulo().toLowerCase(Locale.ROOT).contains(trechoNormalizado))
                 .toList();
     }
+
+    public List<Livro> buscarPorAutor(String trecho) {
+        String trechoNormalizado = trecho.toLowerCase(Locale.ROOT);
+        return repositorio.listarTodos().stream()
+                .filter(livro -> livro.getAutor().toLowerCase(Locale.ROOT).contains(trechoNormalizado))
+                .toList();
+    }
 }

@@ -35,4 +35,14 @@ class ConsultaAcervoServiceTest {
     void deveBuscarTituloPorTrechoIgnorandoMaiusculasEMinusculas() {
         assertEquals(List.of(livro), service.buscarPorTitulo("casmurro"));
     }
+
+    @Test
+    void deveBuscarAutorPorTrechoIgnorandoMaiusculasEMinusculas() {
+        assertEquals(List.of(livro), service.buscarPorAutor("machado"));
+    }
+
+    @Test
+    void deveRetornarListaVaziaQuandoAutorNaoForEncontrado() {
+        assertEquals(List.of(), service.buscarPorAutor("Clarice Lispector"));
+    }
 }
