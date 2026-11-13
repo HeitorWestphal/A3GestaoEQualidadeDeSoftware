@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import br.unisul.a3.biblioteca.dominio.Livro;
 import br.unisul.a3.biblioteca.repositorio.LivroRepositorio;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -27,5 +29,10 @@ class ConsultaAcervoServiceTest {
     @ValueSource(strings = {"9788535914849", "978-85-359-1484-9"})
     void deveBuscarLivroPorIsbnComOuSemHifens(String isbn) {
         assertEquals(livro, service.buscarPorIsbn(isbn).orElseThrow());
+    }
+
+    @Test
+    void deveBuscarTituloPorTrechoIgnorandoMaiusculasEMinusculas() {
+        assertEquals(List.of(livro), service.buscarPorTitulo("casmurro"));
     }
 }
