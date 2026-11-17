@@ -108,4 +108,47 @@ class EmprestimoServiceTest {
         assertEquals(LocalDate.now().plusDays(7), emprestimo.getDataPrevista());
         assertEquals(1, livro.getQuantidadeDisponivel());
     }
+
+    @Test
+    void deveRecusarQuandoLeitorJaPossuiTresEmprestimosAtivos() {
+        Livro comQuatroExemplares = new Livro(ISBN, "Dom Casmurro", "Machado de Assis", 1899, 4);
+        livroRepositorio.salvar(comQuatroExemplares);
+        service.emprestar(CPF, ISBN);
+        service.emprestar(CPF, ISBN);
+        service.emprestar(CPF, ISBN);
+
+        RegraNegocioException erro = assertThrows(RegraNegocioException.class, () -> service.emprestar(CPF, ISBN));
+
+        assertEquals("Limite de 3 empréstimos ativos atingido", erro.getMessage());
+        assertEquals(1, comQuatroExemplares.getQuantidadeDisponivel());
+        assertEquals(3, emprestimoRepositorio.listarAtivosPorLeitor(leitor).size());
+    }
+
+    @Test
+    void deveRecusarQuandoLeitorPossuiEmprestimoAtrasado() {
+        Clock dataDoEmprestimo = Clock.fixed(Instant.parse("2026-10-10T12:00:00Z"), ZoneId.of("America/Sao_Paulo"));
+        EmprestimoService serviceAntigo = new EmprestimoService(
+                livroRepositorio, leitorRepositorio, emprestimoRepositorio, dataDoEmprestimo);
+        serviceAntigo.emprestar(CPF, ISBN);
+
+        RegraNegocioException erro = assertThrows(RegraNegocioException.class, () -> service.emprestar(CPF, ISBN));
+
+        assertEquals("Leitor possui empréstimo em atraso", erro.getMessage());
+        assertEquals(1, livro.getQuantidadeDisponivel());
+        assertEquals(1, emprestimoRepositorio.listarAtivosPorLeitor(leitor).size());
+    }
+
+    @Test
+    void devePermitirNovoEmprestimoNoDiaDaDevolucaoPrevista() {
+        Clock dataDoEmprestimo = Clock.fixed(Instant.parse("2026-10-19T12:00:00Z"), ZoneId.of("America/Sao_Paulo"));
+        EmprestimoService serviceNoPrazo = new EmprestimoService(
+                livroRepositorio, leitorRepositorio, emprestimoRepositorio, dataDoEmprestimo);
+        serviceNoPrazo.emprestar(CPF, ISBN);
+
+        Emprestimo segundo = service.emprestar(CPF, ISBN);
+
+        assertEquals(LocalDate.of(2026, 11, 2), segundo.getDataPrevista());
+        assertEquals(0, livro.getQuantidadeDisponivel());
+        assertEquals(2, emprestimoRepositorio.listarAtivosPorLeitor(leitor).size());
+    }
 }

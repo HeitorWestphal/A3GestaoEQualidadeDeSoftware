@@ -46,4 +46,8 @@ public class Emprestimo {
     public boolean isAtivo() {
         return dataDevolucao == null;
     }
+
+    public boolean isAtrasado(Clock relogio) {
+        return isAtivo() && LocalDate.now(relogio).isAfter(dataPrevista);
+    }
 }

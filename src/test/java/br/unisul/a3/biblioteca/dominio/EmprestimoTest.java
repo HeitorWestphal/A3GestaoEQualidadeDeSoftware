@@ -1,6 +1,7 @@
 package br.unisul.a3.biblioteca.dominio;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -27,5 +28,20 @@ class EmprestimoTest {
         assertEquals(dataEmprestimo.plusDays(Emprestimo.PRAZO_EM_DIAS), emprestimo.getDataPrevista());
         assertNull(emprestimo.getDataDevolucao());
         assertTrue(emprestimo.isAtivo());
+    }
+
+    @Test
+    void naoDeveEstarAtrasadoQuandoAindaEstaDentroDoPrazo() {
+        Emprestimo emprestimo = new Emprestimo(livro, leitor, relogio);
+
+        assertFalse(emprestimo.isAtrasado(relogio));
+    }
+
+    @Test
+    void deveEstarAtrasadoQuandoADataAtualUltrapassaAPrevista() {
+        Emprestimo emprestimo = new Emprestimo(livro, leitor, relogio);
+        Clock depoisDoPrazo = Clock.fixed(Instant.parse("2026-11-03T12:00:00Z"), ZoneId.of("America/Sao_Paulo"));
+
+        assertTrue(emprestimo.isAtrasado(depoisDoPrazo));
     }
 }

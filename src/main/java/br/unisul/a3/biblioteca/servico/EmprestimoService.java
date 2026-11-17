@@ -12,9 +12,11 @@ import br.unisul.a3.biblioteca.repositorio.LivroRepositorio;
 import java.time.Clock;
 
 /**
- * Registro de empréstimo de exemplares (RF04, RN02).
+ * Registro de empréstimo de exemplares (RF04, RN02, RN03, RN05).
  */
 public class EmprestimoService {
+
+    static final int LIMITE_EMPRESTIMOS_ATIVOS = 3;
 
     private final LivroRepositorio livroRepositorio;
     private final LeitorRepositorio leitorRepositorio;
@@ -43,6 +45,12 @@ public class EmprestimoService {
         Livro livro = livroRepositorio.buscarPorIsbn(Isbn.normalizar(isbn))
                 .orElseThrow(() -> new RegraNegocioException("Livro não cadastrado"));
 
+        if (possuiEmprestimoAtrasado(leitor)) {
+            throw new RegraNegocioException("Leitor possui empréstimo em atraso");
+        }
+        if (emprestimoRepositorio.listarAtivosPorLeitor(leitor).size() >= LIMITE_EMPRESTIMOS_ATIVOS) {
+            throw new RegraNegocioException("Limite de 3 empréstimos ativos atingido");
+        }
         if (!livro.isDisponivel()) {
             throw new RegraNegocioException("Livro indisponível");
         }
@@ -50,5 +58,14 @@ public class EmprestimoService {
         livro.retirarExemplar();
         Emprestimo emprestimo = new Emprestimo(livro, leitor, relogio);
         return emprestimoRepositorio.salvar(emprestimo);
+    }
+
+    private boolean possuiEmprestimoAtrasado(Leitor leitor) {
+        for (Emprestimo emprestimo : emprestimoRepositorio.listarAtivosPorLeitor(leitor)) {
+            if (emprestimo.isAtrasado(relogio)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
