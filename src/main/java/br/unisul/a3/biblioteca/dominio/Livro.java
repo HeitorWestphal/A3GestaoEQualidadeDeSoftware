@@ -1,5 +1,6 @@
 package br.unisul.a3.biblioteca.dominio;
 
+import br.unisul.a3.biblioteca.excecao.RegraNegocioException;
 import java.util.Objects;
 
 /**
@@ -49,6 +50,13 @@ public class Livro {
 
     public boolean isDisponivel() {
         return quantidadeDisponivel > 0;
+    }
+
+    public void retirarExemplar() {
+        if (quantidadeDisponivel == 0) {
+            throw new RegraNegocioException("Livro indisponível");
+        }
+        quantidadeDisponivel--;
     }
 
     @Override
