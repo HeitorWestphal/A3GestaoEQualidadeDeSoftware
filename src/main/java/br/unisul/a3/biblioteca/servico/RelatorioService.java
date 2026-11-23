@@ -27,4 +27,10 @@ public class RelatorioService {
                 .filter(Emprestimo::isAtivo)
                 .toList();
     }
+
+    public List<Emprestimo> listarAtrasados() {
+        return emprestimoRepositorio.listarTodos().stream()
+                .filter(emprestimo -> emprestimo.isAtrasado(relogio))
+                .toList();
+    }
 }

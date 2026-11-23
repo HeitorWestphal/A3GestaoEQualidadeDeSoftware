@@ -16,7 +16,11 @@ import org.junit.jupiter.api.Test;
 class RelatorioServiceTest {
 
     private static final ZoneId ZONA = ZoneId.of("America/Sao_Paulo");
+    // Emprestado em 26/10 -> data prevista 02/11
     private static final Clock DIA_26_10 = Clock.fixed(Instant.parse("2026-10-26T12:00:00Z"), ZONA);
+    // Emprestado em 01/11 -> data prevista 08/11
+    private static final Clock DIA_01_11 = Clock.fixed(Instant.parse("2026-11-01T12:00:00Z"), ZONA);
+    private static final Clock DIA_05_11 = Clock.fixed(Instant.parse("2026-11-05T12:00:00Z"), ZONA);
 
     private final Livro domCasmurro = new Livro("9788535914849", "Dom Casmurro", "Machado de Assis", 1899, 2);
     private final Livro memorias = new Livro("9788535911664", "Memórias Póstumas", "Machado de Assis", 1881, 2);
@@ -38,6 +42,27 @@ class RelatorioServiceTest {
     @Test
     void deveRetornarListaVaziaQuandoNaoHaEmprestimos() {
         assertTrue(criarService(DIA_26_10).listarAtivos().isEmpty());
+    }
+
+    @Test
+    void deveListarSomenteEmprestimosAtrasados() {
+        Emprestimo atrasado = emprestar(domCasmurro, maria, DIA_26_10);
+        emprestar(memorias, maria, DIA_01_11);
+
+        List<Emprestimo> atrasados = criarService(DIA_05_11).listarAtrasados();
+
+        assertEquals(List.of(atrasado), atrasados);
+    }
+
+    @Test
+    void naoDeveListarEmprestimoDevolvidoComoAtivoNemAtrasado() {
+        Emprestimo devolvidoComAtraso = emprestar(domCasmurro, maria, DIA_26_10);
+        devolvidoComAtraso.registrarDevolucao(DIA_05_11);
+
+        RelatorioService service = criarService(DIA_05_11);
+
+        assertTrue(service.listarAtivos().isEmpty());
+        assertTrue(service.listarAtrasados().isEmpty());
     }
 
     private Emprestimo emprestar(Livro livro, Leitor leitor, Clock dia) {
