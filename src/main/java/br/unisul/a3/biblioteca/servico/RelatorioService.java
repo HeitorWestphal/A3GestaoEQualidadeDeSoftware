@@ -2,7 +2,10 @@ package br.unisul.a3.biblioteca.servico;
 
 import br.unisul.a3.biblioteca.dominio.Cpf;
 import br.unisul.a3.biblioteca.dominio.Emprestimo;
+import br.unisul.a3.biblioteca.dominio.Leitor;
+import br.unisul.a3.biblioteca.excecao.RegraNegocioException;
 import br.unisul.a3.biblioteca.repositorio.EmprestimoRepositorio;
+import br.unisul.a3.biblioteca.repositorio.LeitorRepositorio;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.util.ArrayList;
@@ -15,14 +18,17 @@ import java.util.List;
  */
 public class RelatorioService {
 
+    private final LeitorRepositorio leitorRepositorio;
     private final EmprestimoRepositorio emprestimoRepositorio;
     private final Clock relogio;
 
-    public RelatorioService(EmprestimoRepositorio emprestimoRepositorio) {
-        this(emprestimoRepositorio, Clock.systemDefaultZone());
+    public RelatorioService(LeitorRepositorio leitorRepositorio, EmprestimoRepositorio emprestimoRepositorio) {
+        this(leitorRepositorio, emprestimoRepositorio, Clock.systemDefaultZone());
     }
 
-    RelatorioService(EmprestimoRepositorio emprestimoRepositorio, Clock relogio) {
+    RelatorioService(LeitorRepositorio leitorRepositorio, EmprestimoRepositorio emprestimoRepositorio,
+                     Clock relogio) {
+        this.leitorRepositorio = leitorRepositorio;
         this.emprestimoRepositorio = emprestimoRepositorio;
         this.relogio = relogio;
     }
@@ -51,12 +57,16 @@ public class RelatorioService {
 
     /**
      * Todos os empréstimos do leitor, ativos e devolvidos, do mais recente para o mais antigo.
+     * Leitor sem empréstimos retorna lista vazia.
+     *
+     * @throws RegraNegocioException se não houver leitor cadastrado com o CPF informado
      */
     public List<Emprestimo> listarHistoricoDoLeitor(String cpf) {
-        String cpfNormalizado = Cpf.normalizar(cpf);
+        Leitor leitor = leitorRepositorio.buscarPorCpf(Cpf.normalizar(cpf))
+                .orElseThrow(() -> new RegraNegocioException("Leitor não cadastrado"));
         List<Emprestimo> historico = new ArrayList<>();
         for (Emprestimo emprestimo : emprestimoRepositorio.listarTodos()) {
-            if (emprestimo.getLeitor().getCpf().equals(cpfNormalizado)) {
+            if (emprestimo.getLeitor().equals(leitor)) {
                 historico.add(emprestimo);
             }
         }

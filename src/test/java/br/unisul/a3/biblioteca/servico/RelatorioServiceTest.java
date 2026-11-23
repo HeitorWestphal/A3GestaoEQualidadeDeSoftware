@@ -1,17 +1,21 @@
 package br.unisul.a3.biblioteca.servico;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import br.unisul.a3.biblioteca.dominio.Emprestimo;
 import br.unisul.a3.biblioteca.dominio.Leitor;
 import br.unisul.a3.biblioteca.dominio.Livro;
+import br.unisul.a3.biblioteca.excecao.RegraNegocioException;
 import br.unisul.a3.biblioteca.repositorio.EmprestimoRepositorio;
+import br.unisul.a3.biblioteca.repositorio.LeitorRepositorio;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class RelatorioServiceTest {
@@ -28,7 +32,14 @@ class RelatorioServiceTest {
     private final Leitor maria = new Leitor("52998224725", "Maria Souza", "maria@exemplo.com");
     private final Leitor joao = new Leitor("11144477735", "João Lima", "joao@exemplo.com");
 
+    private final LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
     private final EmprestimoRepositorio emprestimoRepositorio = new EmprestimoRepositorio();
+
+    @BeforeEach
+    void cadastrarLeitores() {
+        leitorRepositorio.salvar(maria);
+        leitorRepositorio.salvar(joao);
+    }
 
     @Test
     void deveListarSomenteEmprestimosAtivos() {
@@ -111,11 +122,41 @@ class RelatorioServiceTest {
         assertEquals(List.of(segundo, primeiro), historico);
     }
 
+    @Test
+    void deveRecusarHistoricoDeLeitorNaoCadastrado() {
+        RelatorioService service = criarService(DIA_05_11);
+
+        RegraNegocioException erro = assertThrows(RegraNegocioException.class,
+                () -> service.listarHistoricoDoLeitor("390.533.447-05"));
+        assertEquals("Leitor não cadastrado", erro.getMessage());
+    }
+
+    @Test
+    void deveRecusarHistoricoComCpfNulo() {
+        RelatorioService service = criarService(DIA_05_11);
+
+        assertThrows(RegraNegocioException.class, () -> service.listarHistoricoDoLeitor(null));
+    }
+
+    @Test
+    void deveRetornarHistoricoVazioParaLeitorSemEmprestimos() {
+        emprestar(domCasmurro, maria, DIA_01_11);
+
+        assertTrue(criarService(DIA_05_11).listarHistoricoDoLeitor(joao.getCpf()).isEmpty());
+    }
+
+    @Test
+    void deveCriarServicoComRelogioDoSistema() {
+        RelatorioService service = new RelatorioService(leitorRepositorio, emprestimoRepositorio);
+
+        assertTrue(service.listarAtivos().isEmpty());
+    }
+
     private Emprestimo emprestar(Livro livro, Leitor leitor, Clock dia) {
         return emprestimoRepositorio.salvar(new Emprestimo(livro, leitor, dia));
     }
 
     private RelatorioService criarService(Clock hoje) {
-        return new RelatorioService(emprestimoRepositorio, hoje);
+        return new RelatorioService(leitorRepositorio, emprestimoRepositorio, hoje);
     }
 }
