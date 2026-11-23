@@ -7,6 +7,7 @@ import br.unisul.a3.biblioteca.dominio.Emprestimo;
 import br.unisul.a3.biblioteca.dominio.Leitor;
 import br.unisul.a3.biblioteca.dominio.Livro;
 import br.unisul.a3.biblioteca.repositorio.EmprestimoRepositorio;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -63,6 +64,27 @@ class RelatorioServiceTest {
 
         assertTrue(service.listarAtivos().isEmpty());
         assertTrue(service.listarAtrasados().isEmpty());
+    }
+
+    @Test
+    void deveCalcularTresDiasDeAtrasoEMultaDeTresReais() {
+        Emprestimo atrasado = emprestar(domCasmurro, maria, DIA_26_10);
+        emprestar(memorias, maria, DIA_01_11);
+
+        List<EmprestimoAtrasado> atrasos = criarService(DIA_05_11).listarAtrasosComMulta();
+
+        assertEquals(1, atrasos.size());
+        EmprestimoAtrasado linha = atrasos.get(0);
+        assertEquals(atrasado, linha.emprestimo());
+        assertEquals(3, linha.diasAtraso());
+        assertEquals(new BigDecimal("3.00"), linha.multaPrevista());
+    }
+
+    @Test
+    void naoDeveCalcularMultaQuandoNaoHaAtrasos() {
+        emprestar(domCasmurro, maria, DIA_01_11);
+
+        assertTrue(criarService(DIA_05_11).listarAtrasosComMulta().isEmpty());
     }
 
     private Emprestimo emprestar(Livro livro, Leitor leitor, Clock dia) {
