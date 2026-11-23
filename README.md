@@ -102,6 +102,8 @@ Pré-requisito: JDK 21 ou superior (o Maven Wrapper baixa o Maven automaticament
 java -jar target/sistema-biblioteca-0.1.0-SNAPSHOT.jar   # executa a aplicação
 ```
 
+A aplicação apresenta um menu de console para cadastrar livros e consultar o acervo por ISBN, título ou autor.
+
 O relatório de cobertura é gerado em `target/site/jacoco/index.html`.
 
 ## Estrutura do repositório
