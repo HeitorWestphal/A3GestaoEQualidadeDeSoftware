@@ -43,7 +43,7 @@ O sistema foi desenvolvido em Java 21, com Maven, JUnit 5 e JaCoCo. O trabalho e
 
 Conteúdo em [plano-de-testes.md](plano-de-testes.md), seções 2.1 a 2.13. Antes da entrega, completar:
 
-- [ ] 2.9: links finais dos testes de cada integrante (tabela do README).
+- [x] 2.9: links dos testes de cada integrante (tabela do README). Conferir de novo depois das issues #21 a #25.
 - [ ] 2.10: cobertura final e resultado do quality gate (print do SonarCloud e do resumo do CI).
 - [ ] 2.12: tabela de problemas encontrados e corrigidos, a partir de [qualidade.md](qualidade.md), com análise antes e depois.
 - [ ] Prints: execução do CI no GitHub Actions, relatório do JaCoCo, painel do SonarCloud, lista de issues fechadas.
