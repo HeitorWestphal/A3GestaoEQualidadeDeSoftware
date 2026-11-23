@@ -1,7 +1,9 @@
 package br.unisul.a3.biblioteca.dominio;
 
+import br.unisul.a3.biblioteca.excecao.RegraNegocioException;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Empréstimo de um exemplar a um leitor (RF04, RN04).
@@ -49,5 +51,20 @@ public class Emprestimo {
 
     public boolean isAtrasado(Clock relogio) {
         return isAtivo() && LocalDate.now(relogio).isAfter(dataPrevista);
+    }
+
+    public void registrarDevolucao(Clock relogio) {
+        if (!isAtivo()) {
+            throw new RegraNegocioException("Empréstimo já encerrado");
+        }
+        this.dataDevolucao = LocalDate.now(relogio);
+    }
+
+    public long calcularDiasAtraso(Clock relogio) {
+        LocalDate dataReferencia = dataDevolucao != null ? dataDevolucao : LocalDate.now(relogio);
+        if (dataReferencia.isAfter(dataPrevista)) {
+            return ChronoUnit.DAYS.between(dataPrevista, dataReferencia);
+        }
+        return 0;
     }
 }

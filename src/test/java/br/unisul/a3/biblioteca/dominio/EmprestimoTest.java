@@ -3,7 +3,10 @@ package br.unisul.a3.biblioteca.dominio;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import br.unisul.a3.biblioteca.excecao.RegraNegocioException;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -43,5 +46,49 @@ class EmprestimoTest {
         Clock depoisDoPrazo = Clock.fixed(Instant.parse("2026-11-03T12:00:00Z"), ZoneId.of("America/Sao_Paulo"));
 
         assertTrue(emprestimo.isAtrasado(depoisDoPrazo));
+    }
+
+    @Test
+    void deveRegistrarDevolucaoNoPrazoSemAtraso() {
+        Emprestimo emprestimo = new Emprestimo(livro, leitor, relogio);
+        Clock noPrazo = Clock.fixed(Instant.parse("2026-11-01T12:00:00Z"), ZoneId.of("America/Sao_Paulo"));
+
+        emprestimo.registrarDevolucao(noPrazo);
+
+        assertEquals(LocalDate.of(2026, 11, 1), emprestimo.getDataDevolucao());
+        assertFalse(emprestimo.isAtivo());
+        assertEquals(0, emprestimo.calcularDiasAtraso(noPrazo));
+    }
+
+    @Test
+    void deveCalcularDiasDeAtrasoQuandoDevolvidoAposOPrazo() {
+        Emprestimo emprestimo = new Emprestimo(livro, leitor, relogio);
+        Clock doisDiasAposPrazo = Clock.fixed(Instant.parse("2026-11-04T12:00:00Z"), ZoneId.of("America/Sao_Paulo"));
+
+        emprestimo.registrarDevolucao(doisDiasAposPrazo);
+
+        assertEquals(LocalDate.of(2026, 11, 4), emprestimo.getDataDevolucao());
+        assertFalse(emprestimo.isAtivo());
+        assertEquals(2, emprestimo.calcularDiasAtraso(doisDiasAposPrazo));
+    }
+
+    @Test
+    void deveRecusarDevolucaoDeEmprestimoJaDevolvido() {
+        Emprestimo emprestimo = new Emprestimo(livro, leitor, relogio);
+        emprestimo.registrarDevolucao(relogio);
+
+        RegraNegocioException erro = assertThrows(RegraNegocioException.class,
+                () -> emprestimo.registrarDevolucao(relogio));
+
+        assertEquals("Empréstimo já encerrado", erro.getMessage());
+    }
+
+    @Test
+    void deveCalcularDiasDeAtrasoDeEmprestimoAtivo() {
+        Emprestimo emprestimo = new Emprestimo(livro, leitor, relogio);
+        Clock doisDiasAposPrazo = Clock.fixed(Instant.parse("2026-11-04T12:00:00Z"), ZoneId.of("America/Sao_Paulo"));
+
+        assertTrue(emprestimo.isAtivo());
+        assertEquals(2, emprestimo.calcularDiasAtraso(doisDiasAposPrazo));
     }
 }
