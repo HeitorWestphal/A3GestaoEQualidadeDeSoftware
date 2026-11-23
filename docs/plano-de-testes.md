@@ -10,7 +10,7 @@ Garantir que o Sistema de Biblioteca cumpre os requisitos funcionais (RF01 a RF0
 - cobertura mínima de 75% do código-fonte;
 - aprovação no quality gate da análise estática (SonarCloud).
 
-**Justificativa:** o sistema controla empréstimos, prazos e multas. Erros nessas regras causam prejuízo direto para a biblioteca (livros não devolvidos, multas cobradas errado) e para os leitores. Testar desde o início (*shift-left*) evita que defeitos se acumulem enquanto as funcionalidades são feitas em paralelo por cinco pessoas.
+**Justificativa:** o sistema controla empréstimos, prazos e multas. Erros nessas regras causam prejuízo direto para a biblioteca (livros não devolvidos, multas cobradas errado) e para os leitores. Testar desde o início (*shift-left*) evita que defeitos se acumulem enquanto as funcionalidades são feitas em paralelo por seis pessoas.
 
 ## 2.2 Escopo do teste
 
@@ -24,11 +24,11 @@ Garantir que o Sistema de Biblioteca cumpre os requisitos funcionais (RF01 a RF0
 | Empréstimos | Registro de empréstimo, limites e pendências | RF04, RN02 a RN05 |
 | Devoluções | Registro de devolução e cálculo de multa | RF05, RN06 |
 | Relatórios | Empréstimos em atraso e histórico do leitor | RF06 |
-| Integração | Fluxo completo cadastro → empréstimo → devolução | — |
+| Menu de console | Opções do menu, mensagens de erro, entrada inválida ou interrompida | — |
+| Integração | Fluxo completo cadastro → empréstimo → devolução, também pelo menu | — |
 
 **Não será testado:**
 
-- **Interface de console (menu):** é uma camada fina que só lê dados e chama os serviços; as regras ficam nos serviços, que são testados. Ela é verificada manualmente na demonstração.
 - **Desempenho e carga:** o sistema é de uso local por um bibliotecário, sem acesso concorrente.
 - **Persistência em banco de dados:** nesta versão os dados ficam em memória (repositórios). Se um banco for adotado, entra no escopo dos testes de integração.
 
