@@ -28,7 +28,7 @@ Cada integrante implementa e testa a sua funcionalidade e faz os commits com a p
 | Ian Santiago Silveira | RF03 – Consultar acervo + menu da aplicação | _em desenvolvimento_ |
 | João Gabriel Weber dos Santos Verona | RF04 – Registrar empréstimo (RN02 a RN05) | [LivroTest](src/test/java/br/unisul/a3/biblioteca/dominio/LivroTest.java), [EmprestimoTest](src/test/java/br/unisul/a3/biblioteca/dominio/EmprestimoTest.java), [EmprestimoRepositorioTest](src/test/java/br/unisul/a3/biblioteca/repositorio/EmprestimoRepositorioTest.java), [EmprestimoServiceTest](src/test/java/br/unisul/a3/biblioteca/servico/EmprestimoServiceTest.java), [EmprestimoIntegracaoTest](src/test/java/br/unisul/a3/biblioteca/servico/EmprestimoIntegracaoTest.java) |
 | Bruno Hudson Siebert Costa | RF05 – Registrar devolução e multa (RN06) + SonarCloud | [LivroTest](src/test/java/br/unisul/a3/biblioteca/dominio/LivroTest.java), [EmprestimoTest](src/test/java/br/unisul/a3/biblioteca/dominio/EmprestimoTest.java), [DevolucaoServiceTest](src/test/java/br/unisul/a3/biblioteca/servico/DevolucaoServiceTest.java), [DevolucaoIntegracaoTest](src/test/java/br/unisul/a3/biblioteca/servico/DevolucaoIntegracaoTest.java) |
-| João Pedro Nobile dos Santos | RF06 – Consultar empréstimos em atraso e histórico do leitor | _em desenvolvimento_ |
+| João Pedro Nobile dos Santos | RF06 – Consultar empréstimos em atraso e histórico do leitor | [RelatorioServiceTest](src/test/java/br/unisul/a3/biblioteca/servico/RelatorioServiceTest.java), [AppTest](src/test/java/br/unisul/a3/biblioteca/AppTest.java) |
 
 O planejamento completo dos testes está em [docs/plano-de-testes.md](docs/plano-de-testes.md).
 

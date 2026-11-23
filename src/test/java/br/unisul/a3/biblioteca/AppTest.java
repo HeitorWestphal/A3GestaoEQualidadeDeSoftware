@@ -4,11 +4,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import br.unisul.a3.biblioteca.dominio.Emprestimo;
+import br.unisul.a3.biblioteca.dominio.Leitor;
+import br.unisul.a3.biblioteca.dominio.Livro;
+import br.unisul.a3.biblioteca.repositorio.EmprestimoRepositorio;
+import br.unisul.a3.biblioteca.repositorio.LeitorRepositorio;
+import br.unisul.a3.biblioteca.repositorio.LivroRepositorio;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -169,14 +177,53 @@ class AppTest {
         assertFalse(resultado.contains("Nenhum livro encontrado."));
     }
 
+    @Test
+    void deveMostrarRelatorioDeAtrasosPeloMenu() {
+        LivroRepositorio livroRepositorio = new LivroRepositorio();
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        EmprestimoRepositorio emprestimoRepositorio = new EmprestimoRepositorio();
+        Livro domCasmurro = livroRepositorio.salvar(
+                new Livro("9788535914849", "Dom Casmurro", "Machado de Assis", 1899, 2));
+        Livro memorias = livroRepositorio.salvar(
+                new Livro("9788535911664", "Memórias Póstumas", "Machado de Assis", 1881, 2));
+        Leitor maria = leitorRepositorio.salvar(new Leitor("52998224725", "Maria Souza", "maria@exemplo.com"));
+        // Emprestado há 10 dias com prazo de 7 -> 3 dias de atraso
+        Clock dezDiasAtras = Clock.offset(Clock.systemDefaultZone(), Duration.ofDays(-10));
+        emprestimoRepositorio.salvar(new Emprestimo(domCasmurro, maria, dezDiasAtras));
+        // Emprestado hoje -> ainda no prazo
+        emprestimoRepositorio.salvar(new Emprestimo(memorias, maria, Clock.systemDefaultZone()));
+
+        App app = new App(entradaSimulada("3\n0\n"), livroRepositorio, leitorRepositorio, emprestimoRepositorio);
+        String resultado = executar(app);
+
+        assertTrue(resultado.contains(
+                "Livro: Dom Casmurro | Leitor: Maria Souza | Dias de atraso: 3 | Multa prevista: R$ 3,00"));
+        assertFalse(resultado.contains("Livro: Memórias Póstumas"));
+    }
+
+    @Test
+    void deveInformarQuandoNaoHaEmprestimosEmAtraso() {
+        String resultado = executarComEntrada("3\n0\n");
+
+        assertTrue(resultado.contains("Relatório de empréstimos em atraso"));
+        assertTrue(resultado.contains("Nenhum empréstimo em atraso."));
+    }
+
     private static String executarComEntrada(String entrada) {
-        InputStream entradaSimulada = new ByteArrayInputStream(entrada.getBytes(StandardCharsets.UTF_8));
+        return executar(new App(entradaSimulada(entrada)));
+    }
+
+    private static InputStream entradaSimulada(String entrada) {
+        return new ByteArrayInputStream(entrada.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static String executar(App app) {
         ByteArrayOutputStream saida = new ByteArrayOutputStream();
         PrintStream saidaOriginal = System.out;
 
         try (PrintStream saidaCapturada = new PrintStream(saida, true, StandardCharsets.UTF_8)) {
             System.setOut(saidaCapturada);
-            new App(entradaSimulada).executar();
+            app.executar();
         } finally {
             System.setOut(saidaOriginal);
         }

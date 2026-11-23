@@ -2,9 +2,13 @@ package br.unisul.a3.biblioteca;
 
 import br.unisul.a3.biblioteca.dominio.Livro;
 import br.unisul.a3.biblioteca.excecao.RegraNegocioException;
+import br.unisul.a3.biblioteca.repositorio.EmprestimoRepositorio;
+import br.unisul.a3.biblioteca.repositorio.LeitorRepositorio;
 import br.unisul.a3.biblioteca.repositorio.LivroRepositorio;
 import br.unisul.a3.biblioteca.servico.ConsultaAcervoService;
+import br.unisul.a3.biblioteca.servico.EmprestimoAtrasado;
 import br.unisul.a3.biblioteca.servico.LivroService;
+import br.unisul.a3.biblioteca.servico.RelatorioService;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -20,12 +24,18 @@ public final class App {
     private final Scanner scanner;
     private final LivroService livroService;
     private final ConsultaAcervoService consultaAcervoService;
+    private final RelatorioService relatorioService;
 
     public App(InputStream entrada) {
+        this(entrada, new LivroRepositorio(), new LeitorRepositorio(), new EmprestimoRepositorio());
+    }
+
+    App(InputStream entrada, LivroRepositorio livroRepositorio, LeitorRepositorio leitorRepositorio,
+        EmprestimoRepositorio emprestimoRepositorio) {
         scanner = new Scanner(entrada, StandardCharsets.UTF_8);
-        LivroRepositorio repositorio = new LivroRepositorio();
-        livroService = new LivroService(repositorio);
-        consultaAcervoService = new ConsultaAcervoService(repositorio);
+        livroService = new LivroService(livroRepositorio);
+        consultaAcervoService = new ConsultaAcervoService(livroRepositorio);
+        relatorioService = new RelatorioService(leitorRepositorio, emprestimoRepositorio);
     }
 
     public static void main(String[] args) {
@@ -36,10 +46,12 @@ public final class App {
         System.out.println(mensagemBoasVindas());
         String opcao;
         while ((opcao = lerLinha(
-                "\n1 - Cadastrar livro\n2 - Consultar acervo\n0 - Sair\nEscolha uma opção: ")) != null) {
+                "\n1 - Cadastrar livro\n2 - Consultar acervo\n3 - Relatório de atrasos\n0 - Sair\n"
+                        + "Escolha uma opção: ")) != null) {
             switch (opcao) {
                 case "1" -> cadastrarLivro();
                 case "2" -> consultarAcervo();
+                case "3" -> exibirRelatorioAtrasos();
                 case "0" -> {
                     System.out.println("Encerrando o sistema.");
                     return;
@@ -98,6 +110,21 @@ public final class App {
             exibirLivros(livros);
         } catch (RegraNegocioException erro) {
             System.out.println("Erro: " + erro.getMessage());
+        }
+    }
+
+    private void exibirRelatorioAtrasos() {
+        System.out.println("\nRelatório de empréstimos em atraso");
+        List<EmprestimoAtrasado> atrasos = relatorioService.listarAtrasosComMulta();
+        if (atrasos.isEmpty()) {
+            System.out.println("Nenhum empréstimo em atraso.");
+            return;
+        }
+        for (EmprestimoAtrasado atraso : atrasos) {
+            System.out.println("Livro: " + atraso.emprestimo().getLivro().getTitulo()
+                    + " | Leitor: " + atraso.emprestimo().getLeitor().getNome()
+                    + " | Dias de atraso: " + atraso.diasAtraso()
+                    + " | Multa prevista: R$ " + atraso.multaPrevista().toPlainString().replace('.', ','));
         }
     }
 
