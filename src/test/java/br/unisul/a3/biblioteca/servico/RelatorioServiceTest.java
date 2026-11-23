@@ -1,0 +1,50 @@
+package br.unisul.a3.biblioteca.servico;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import br.unisul.a3.biblioteca.dominio.Emprestimo;
+import br.unisul.a3.biblioteca.dominio.Leitor;
+import br.unisul.a3.biblioteca.dominio.Livro;
+import br.unisul.a3.biblioteca.repositorio.EmprestimoRepositorio;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+
+class RelatorioServiceTest {
+
+    private static final ZoneId ZONA = ZoneId.of("America/Sao_Paulo");
+    private static final Clock DIA_26_10 = Clock.fixed(Instant.parse("2026-10-26T12:00:00Z"), ZONA);
+
+    private final Livro domCasmurro = new Livro("9788535914849", "Dom Casmurro", "Machado de Assis", 1899, 2);
+    private final Livro memorias = new Livro("9788535911664", "Memórias Póstumas", "Machado de Assis", 1881, 2);
+    private final Leitor maria = new Leitor("52998224725", "Maria Souza", "maria@exemplo.com");
+
+    private final EmprestimoRepositorio emprestimoRepositorio = new EmprestimoRepositorio();
+
+    @Test
+    void deveListarSomenteEmprestimosAtivos() {
+        Emprestimo ativo = emprestar(domCasmurro, maria, DIA_26_10);
+        Emprestimo devolvido = emprestar(memorias, maria, DIA_26_10);
+        devolvido.registrarDevolucao(DIA_26_10);
+
+        List<Emprestimo> ativos = criarService(DIA_26_10).listarAtivos();
+
+        assertEquals(List.of(ativo), ativos);
+    }
+
+    @Test
+    void deveRetornarListaVaziaQuandoNaoHaEmprestimos() {
+        assertTrue(criarService(DIA_26_10).listarAtivos().isEmpty());
+    }
+
+    private Emprestimo emprestar(Livro livro, Leitor leitor, Clock dia) {
+        return emprestimoRepositorio.salvar(new Emprestimo(livro, leitor, dia));
+    }
+
+    private RelatorioService criarService(Clock hoje) {
+        return new RelatorioService(emprestimoRepositorio, hoje);
+    }
+}
