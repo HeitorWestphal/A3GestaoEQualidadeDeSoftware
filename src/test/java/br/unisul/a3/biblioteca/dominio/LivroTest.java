@@ -83,4 +83,23 @@ class LivroTest {
         assertEquals("Livro indisponível", erro.getMessage());
         assertEquals(0, livro.getQuantidadeDisponivel());
     }
+
+    @Test
+    void deveAumentarDisponibilidadeAoDevolverExemplar() {
+        livro.retirarExemplar();
+        assertEquals(1, livro.getQuantidadeDisponivel());
+
+        livro.devolverExemplar();
+
+        assertEquals(2, livro.getQuantidadeDisponivel());
+        assertTrue(livro.isDisponivel());
+    }
+
+    @Test
+    void deveRecusarDevolucaoQuandoTodosExemplaresJaEstaoDisponiveis() {
+        RegraNegocioException erro = assertThrows(RegraNegocioException.class, livro::devolverExemplar);
+
+        assertEquals("Quantidade de exemplares disponíveis não pode exceder o total", erro.getMessage());
+        assertEquals(2, livro.getQuantidadeDisponivel());
+    }
 }

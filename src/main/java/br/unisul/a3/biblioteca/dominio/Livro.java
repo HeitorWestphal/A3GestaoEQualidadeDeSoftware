@@ -59,6 +59,13 @@ public class Livro {
         quantidadeDisponivel--;
     }
 
+    public void devolverExemplar() {
+        if (quantidadeDisponivel >= quantidadeTotal) {
+            throw new RegraNegocioException("Quantidade de exemplares disponíveis não pode exceder o total");
+        }
+        quantidadeDisponivel++;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
