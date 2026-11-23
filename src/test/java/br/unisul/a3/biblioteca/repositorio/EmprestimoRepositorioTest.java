@@ -65,4 +65,20 @@ class EmprestimoRepositorioTest {
         assertEquals(1, repositorio.listarTodos().size());
         assertEquals(1, repositorio.listarAtivosPorLeitor(maria).size());
     }
+
+    @Test
+    void deveBuscarAtivoEUltimoPorLeitorELivro() {
+        Emprestimo emprestimo = new Emprestimo(domCasmurro, maria, relogio);
+        repositorio.salvar(emprestimo);
+
+        assertTrue(repositorio.buscarAtivoPorLeitorELivro(maria, domCasmurro).isPresent());
+        assertTrue(repositorio.buscarUltimoPorLeitorELivro(maria, domCasmurro).isPresent());
+        assertTrue(repositorio.buscarAtivoPorLeitorELivro(maria, memorias).isEmpty());
+        assertTrue(repositorio.buscarUltimoPorLeitorELivro(maria, memorias).isEmpty());
+
+        emprestimo.registrarDevolucao(relogio);
+
+        assertTrue(repositorio.buscarAtivoPorLeitorELivro(maria, domCasmurro).isEmpty());
+        assertTrue(repositorio.buscarUltimoPorLeitorELivro(maria, domCasmurro).isPresent());
+    }
 }

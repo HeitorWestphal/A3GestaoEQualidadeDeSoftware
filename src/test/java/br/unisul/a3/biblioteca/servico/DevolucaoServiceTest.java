@@ -2,11 +2,13 @@ package br.unisul.a3.biblioteca.servico;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import br.unisul.a3.biblioteca.dominio.Emprestimo;
 import br.unisul.a3.biblioteca.dominio.Leitor;
 import br.unisul.a3.biblioteca.dominio.Livro;
+import br.unisul.a3.biblioteca.excecao.RegraNegocioException;
 import br.unisul.a3.biblioteca.repositorio.EmprestimoRepositorio;
 import br.unisul.a3.biblioteca.repositorio.LeitorRepositorio;
 import br.unisul.a3.biblioteca.repositorio.LivroRepositorio;
@@ -98,6 +100,92 @@ class DevolucaoServiceTest {
         assertTrue(livroCadastrado.isDisponivel());
         assertFalse(emprestimoRepo.listarAtivosPorLeitor(leitor).isEmpty() 
                 && emprestimoRepo.listarAtivosPorLeitor(leitor).stream().anyMatch(Emprestimo::isAtivo));
+    }
+
+    @Test
+    void deveRecusarDevolverEmprestimoInexistente() {
+        LivroRepositorio livroRepo = new LivroRepositorio();
+        LeitorRepositorio leitorRepo = new LeitorRepositorio();
+        EmprestimoRepositorio emprestimoRepo = new EmprestimoRepositorio();
+
+        livroRepo.salvar(livro);
+        leitorRepo.salvar(leitor);
+
+        DevolucaoService service = new DevolucaoService(livroRepo, leitorRepo, emprestimoRepo, Clock.systemDefaultZone());
+
+        RegraNegocioException erro = assertThrows(RegraNegocioException.class,
+                () -> service.devolver(CPF, ISBN));
+        assertEquals("Empréstimo inexistente", erro.getMessage());
+    }
+
+    @Test
+    void deveRecusarDevolverEmprestimoJaEncerradoPorCpfEIsbn() {
+        Clock diaDoEmprestimo = Clock.fixed(Instant.parse("2026-10-26T12:00:00Z"), ZONA);
+        LivroRepositorio livroRepo = new LivroRepositorio();
+        LeitorRepositorio leitorRepo = new LeitorRepositorio();
+        EmprestimoRepositorio emprestimoRepo = new EmprestimoRepositorio();
+
+        Livro livroCadastrado = new Livro(ISBN, "Dom Casmurro", "Machado de Assis", 1899, 2);
+        livroCadastrado.retirarExemplar();
+        livroRepo.salvar(livroCadastrado);
+        leitorRepo.salvar(leitor);
+
+        Emprestimo emprestimo = new Emprestimo(livroCadastrado, leitor, diaDoEmprestimo);
+        emprestimoRepo.salvar(emprestimo);
+
+        DevolucaoService service = new DevolucaoService(livroRepo, leitorRepo, emprestimoRepo, diaDoEmprestimo);
+        service.devolver(CPF, ISBN);
+
+        RegraNegocioException erro = assertThrows(RegraNegocioException.class,
+                () -> service.devolver(CPF, ISBN));
+        assertEquals("Empréstimo já encerrado", erro.getMessage());
+    }
+
+    @Test
+    void deveRecusarDevolverEmprestimoNull() {
+        DevolucaoService service = criarService(Clock.systemDefaultZone());
+
+        RegraNegocioException erro = assertThrows(RegraNegocioException.class,
+                () -> service.devolver((Emprestimo) null));
+        assertEquals("Empréstimo inexistente", erro.getMessage());
+    }
+
+    @Test
+    void deveRecusarDevolverObjetoEmprestimoJaEncerrado() {
+        Clock relogio = Clock.fixed(Instant.parse("2026-10-26T12:00:00Z"), ZONA);
+        DevolucaoService service = criarService(relogio);
+
+        livro.retirarExemplar();
+        Emprestimo emprestimo = new Emprestimo(livro, leitor, relogio);
+        service.devolver(emprestimo);
+
+        RegraNegocioException erro = assertThrows(RegraNegocioException.class,
+                () -> service.devolver(emprestimo));
+        assertEquals("Empréstimo já encerrado", erro.getMessage());
+    }
+
+    @Test
+    void deveRecusarDevolverQuandoLeitorNaoCadastrado() {
+        LivroRepositorio livroRepo = new LivroRepositorio();
+        livroRepo.salvar(livro);
+        DevolucaoService service = new DevolucaoService(livroRepo, new LeitorRepositorio(),
+                new EmprestimoRepositorio(), Clock.systemDefaultZone());
+
+        RegraNegocioException erro = assertThrows(RegraNegocioException.class,
+                () -> service.devolver(CPF, ISBN));
+        assertEquals("Leitor não cadastrado", erro.getMessage());
+    }
+
+    @Test
+    void deveRecusarDevolverQuandoLivroNaoCadastrado() {
+        LeitorRepositorio leitorRepo = new LeitorRepositorio();
+        leitorRepo.salvar(leitor);
+        DevolucaoService service = new DevolucaoService(new LivroRepositorio(), leitorRepo,
+                new EmprestimoRepositorio(), Clock.systemDefaultZone());
+
+        RegraNegocioException erro = assertThrows(RegraNegocioException.class,
+                () -> service.devolver(CPF, ISBN));
+        assertEquals("Livro não cadastrado", erro.getMessage());
     }
 
     private DevolucaoService criarService(Clock relogio) {

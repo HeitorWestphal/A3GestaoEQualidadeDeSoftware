@@ -43,4 +43,14 @@ public class EmprestimoRepositorio {
         }
         return Optional.empty();
     }
+
+    public Optional<Emprestimo> buscarUltimoPorLeitorELivro(Leitor leitor, Livro livro) {
+        for (int i = emprestimos.size() - 1; i >= 0; i--) {
+            Emprestimo emprestimo = emprestimos.get(i);
+            if (emprestimo.getLeitor().equals(leitor) && emprestimo.getLivro().equals(livro)) {
+                return Optional.of(emprestimo);
+            }
+        }
+        return Optional.empty();
+    }
 }

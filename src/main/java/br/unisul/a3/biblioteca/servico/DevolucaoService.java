@@ -45,17 +45,33 @@ public class DevolucaoService {
         return MULTA_POR_DIA.multiply(BigDecimal.valueOf(diasAtraso));
     }
 
+    public BigDecimal devolver(Emprestimo emprestimo) {
+        if (emprestimo == null) {
+            throw new RegraNegocioException("Empréstimo inexistente");
+        }
+        if (!emprestimo.isAtivo()) {
+            throw new RegraNegocioException("Empréstimo já encerrado");
+        }
+        emprestimo.registrarDevolucao(relogio);
+        emprestimo.getLivro().devolverExemplar();
+        return calcularMulta(emprestimo);
+    }
+
     public BigDecimal devolver(String cpf, String isbn) {
         Leitor leitor = leitorRepositorio.buscarPorCpf(Cpf.normalizar(cpf))
                 .orElseThrow(() -> new RegraNegocioException("Leitor não cadastrado"));
         Livro livro = livroRepositorio.buscarPorIsbn(Isbn.normalizar(isbn))
                 .orElseThrow(() -> new RegraNegocioException("Livro não cadastrado"));
 
-        Emprestimo emprestimo = emprestimoRepositorio.buscarAtivoPorLeitorELivro(leitor, livro)
-                .orElseThrow(() -> new RegraNegocioException("Empréstimo ativo não encontrado"));
+        java.util.Optional<Emprestimo> ativo = emprestimoRepositorio.buscarAtivoPorLeitorELivro(leitor, livro);
+        if (ativo.isPresent()) {
+            return devolver(ativo.get());
+        }
 
-        emprestimo.registrarDevolucao(relogio);
-        livro.devolverExemplar();
-        return calcularMulta(emprestimo);
+        if (emprestimoRepositorio.buscarUltimoPorLeitorELivro(leitor, livro).isPresent()) {
+            throw new RegraNegocioException("Empréstimo já encerrado");
+        }
+
+        throw new RegraNegocioException("Empréstimo inexistente");
     }
 }
