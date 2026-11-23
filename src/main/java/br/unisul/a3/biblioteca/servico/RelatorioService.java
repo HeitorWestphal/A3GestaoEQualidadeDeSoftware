@@ -1,9 +1,13 @@
 package br.unisul.a3.biblioteca.servico;
 
+import br.unisul.a3.biblioteca.dominio.Cpf;
 import br.unisul.a3.biblioteca.dominio.Emprestimo;
 import br.unisul.a3.biblioteca.repositorio.EmprestimoRepositorio;
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -43,6 +47,23 @@ public class RelatorioService {
         return listarAtrasados().stream()
                 .map(this::calcularAtraso)
                 .toList();
+    }
+
+    /**
+     * Todos os empréstimos do leitor, ativos e devolvidos, do mais recente para o mais antigo.
+     */
+    public List<Emprestimo> listarHistoricoDoLeitor(String cpf) {
+        String cpfNormalizado = Cpf.normalizar(cpf);
+        List<Emprestimo> historico = new ArrayList<>();
+        for (Emprestimo emprestimo : emprestimoRepositorio.listarTodos()) {
+            if (emprestimo.getLeitor().getCpf().equals(cpfNormalizado)) {
+                historico.add(emprestimo);
+            }
+        }
+        // Inverte a ordem de cadastro para que, na mesma data, o último registrado venha primeiro.
+        Collections.reverse(historico);
+        historico.sort(Comparator.comparing(Emprestimo::getDataEmprestimo).reversed());
+        return historico;
     }
 
     private EmprestimoAtrasado calcularAtraso(Emprestimo emprestimo) {

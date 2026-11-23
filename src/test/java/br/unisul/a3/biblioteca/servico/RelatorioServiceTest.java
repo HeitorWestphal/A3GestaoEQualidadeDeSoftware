@@ -26,6 +26,7 @@ class RelatorioServiceTest {
     private final Livro domCasmurro = new Livro("9788535914849", "Dom Casmurro", "Machado de Assis", 1899, 2);
     private final Livro memorias = new Livro("9788535911664", "Memórias Póstumas", "Machado de Assis", 1881, 2);
     private final Leitor maria = new Leitor("52998224725", "Maria Souza", "maria@exemplo.com");
+    private final Leitor joao = new Leitor("11144477735", "João Lima", "joao@exemplo.com");
 
     private final EmprestimoRepositorio emprestimoRepositorio = new EmprestimoRepositorio();
 
@@ -85,6 +86,29 @@ class RelatorioServiceTest {
         emprestar(domCasmurro, maria, DIA_01_11);
 
         assertTrue(criarService(DIA_05_11).listarAtrasosComMulta().isEmpty());
+    }
+
+    @Test
+    void deveListarHistoricoDoLeitorDoMaisRecenteParaOMaisAntigo() {
+        Emprestimo maisAntigo = emprestar(domCasmurro, maria, DIA_26_10);
+        maisAntigo.registrarDevolucao(DIA_01_11);
+        Emprestimo maisRecente = emprestar(domCasmurro, maria, DIA_05_11);
+        Emprestimo intermediario = emprestar(memorias, maria, DIA_01_11);
+        emprestar(memorias, joao, DIA_01_11);
+
+        List<Emprestimo> historico = criarService(DIA_05_11).listarHistoricoDoLeitor("529.982.247-25");
+
+        assertEquals(List.of(maisRecente, intermediario, maisAntigo), historico);
+    }
+
+    @Test
+    void deveMostrarPrimeiroOUltimoRegistradoQuandoEmprestimosSaoNoMesmoDia() {
+        Emprestimo primeiro = emprestar(domCasmurro, maria, DIA_01_11);
+        Emprestimo segundo = emprestar(memorias, maria, DIA_01_11);
+
+        List<Emprestimo> historico = criarService(DIA_05_11).listarHistoricoDoLeitor(maria.getCpf());
+
+        assertEquals(List.of(segundo, primeiro), historico);
     }
 
     private Emprestimo emprestar(Livro livro, Leitor leitor, Clock dia) {
