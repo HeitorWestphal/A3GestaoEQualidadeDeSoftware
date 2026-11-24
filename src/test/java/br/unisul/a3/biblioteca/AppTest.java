@@ -224,6 +224,57 @@ class AppTest {
         assertEquals("maria@exemplo.com", salvo.getEmail());
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "4\nMaria Souza\n529.982.247-24\nmaria@exemplo.com\n0\n|Erro: CPF inválido",
+        "4\nMaria Souza\n529.982.247-25\nmaria.exemplo.com\n0\n|Erro: E-mail inválido",
+        "4\n\n529.982.247-25\nmaria@exemplo.com\n0\n|Erro: Nome é obrigatório"
+    })
+    void deveMostrarErroENaoSalvarLeitorInvalido(String caso) {
+        String[] partes = caso.split("\\|");
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        App app = new App(entradaSimulada(partes[0]),
+                new LivroRepositorio(), leitorRepositorio, new EmprestimoRepositorio());
+
+        String resultado = executar(app);
+
+        assertTrue(resultado.contains(partes[1]));
+        assertFalse(resultado.contains("Leitor cadastrado:"));
+        assertTrue(leitorRepositorio.listarTodos().isEmpty());
+    }
+
+    @Test
+    void deveMostrarErroAoCadastrarLeitorComCpfDuplicadoPeloMenu() {
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        leitorRepositorio.salvar(new Leitor("52998224725", "Maria Souza", "maria@exemplo.com"));
+        App app = new App(entradaSimulada("4\nOutro Nome\n52998224725\noutro@exemplo.com\n0\n"),
+                new LivroRepositorio(), leitorRepositorio, new EmprestimoRepositorio());
+
+        String resultado = executar(app);
+
+        assertTrue(resultado.contains("Erro: Já existe um leitor cadastrado com este CPF"));
+        assertEquals("Maria Souza", leitorRepositorio.buscarPorCpf("52998224725").orElseThrow().getNome());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "4\n",
+        "4\nMaria Souza\n",
+        "4\nMaria Souza\n529.982.247-25\n"
+    })
+    void deveInterromperCadastroDeLeitorQuandoEntradaAcaba(String entrada) {
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        App app = new App(entradaSimulada(entrada),
+                new LivroRepositorio(), leitorRepositorio, new EmprestimoRepositorio());
+
+        String resultado = executar(app);
+
+        assertTrue(resultado.contains("Cadastro de leitor"));
+        assertFalse(resultado.contains("Leitor cadastrado:"));
+        assertFalse(resultado.contains("Erro:"));
+        assertTrue(leitorRepositorio.listarTodos().isEmpty());
+    }
+
     private static String executarComEntrada(String entrada) {
         return executar(new App(entradaSimulada(entrada)));
     }
