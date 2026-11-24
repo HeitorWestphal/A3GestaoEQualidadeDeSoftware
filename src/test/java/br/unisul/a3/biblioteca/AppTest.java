@@ -209,6 +209,21 @@ class AppTest {
         assertTrue(resultado.contains("Nenhum empréstimo em atraso."));
     }
 
+    @Test
+    void deveCadastrarLeitorPeloMenuESalvarNoRepositorio() {
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        App app = new App(entradaSimulada("4\nMaria Souza\n529.982.247-25\nmaria@exemplo.com\n0\n"),
+                new LivroRepositorio(), leitorRepositorio, new EmprestimoRepositorio());
+
+        String resultado = executar(app);
+
+        assertTrue(resultado.contains("4 - Cadastrar leitor"));
+        assertTrue(resultado.contains("Leitor cadastrado: Maria Souza"));
+        Leitor salvo = leitorRepositorio.buscarPorCpf("52998224725").orElseThrow();
+        assertEquals("Maria Souza", salvo.getNome());
+        assertEquals("maria@exemplo.com", salvo.getEmail());
+    }
+
     private static String executarComEntrada(String entrada) {
         return executar(new App(entradaSimulada(entrada)));
     }
