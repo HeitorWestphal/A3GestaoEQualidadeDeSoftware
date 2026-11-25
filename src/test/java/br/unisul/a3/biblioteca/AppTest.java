@@ -362,6 +362,127 @@ class AppTest {
         assertTrue(emprestimoRepositorio.listarTodos().isEmpty());
     }
 
+    @Test
+    void deveDevolverLivroNoPrazoPeloMenuERecuperarDisponibilidadeSemMulta() {
+        LivroRepositorio livroRepositorio = new LivroRepositorio();
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        EmprestimoRepositorio emprestimoRepositorio = new EmprestimoRepositorio();
+        Livro livro = livroRepositorio.salvar(
+                new Livro("9788535914849", "Dom Casmurro", "Machado de Assis", 1899, 1));
+        Leitor maria = leitorRepositorio.salvar(
+                new Leitor("52998224725", "Maria Souza", "maria@exemplo.com"));
+        livro.retirarExemplar();
+        Emprestimo emprestimo = emprestimoRepositorio.salvar(
+                new Emprestimo(livro, maria, Clock.systemDefaultZone()));
+        assertEquals(0, livro.getQuantidadeDisponivel());
+        assertTrue(emprestimo.isAtivo());
+
+        App app = new App(entradaSimulada("6\n529.982.247-25\n978-85-359-1484-9\n0\n"),
+                livroRepositorio, leitorRepositorio, emprestimoRepositorio);
+
+        String resultado = executar(app);
+
+        assertTrue(resultado.contains("6 - Devolver livro"));
+        assertTrue(resultado.contains("Devolução registrada. Sem multa."));
+        assertEquals(1, livro.getQuantidadeDisponivel());
+        assertTrue(livro.isDisponivel());
+        assertFalse(emprestimo.isAtivo());
+    }
+
+    @Test
+    void deveDevolverLivroComAtrasoEMostrarMultaPeloMenu() {
+        LivroRepositorio livroRepositorio = new LivroRepositorio();
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        EmprestimoRepositorio emprestimoRepositorio = new EmprestimoRepositorio();
+        Livro livro = livroRepositorio.salvar(
+                new Livro("9788535914849", "Dom Casmurro", "Machado de Assis", 1899, 1));
+        Leitor maria = leitorRepositorio.salvar(
+                new Leitor("52998224725", "Maria Souza", "maria@exemplo.com"));
+        livro.retirarExemplar();
+        Clock relogioPassado = Clock.offset(Clock.systemDefaultZone(), Duration.ofDays(-9));
+        Emprestimo emprestimo = emprestimoRepositorio.salvar(
+                new Emprestimo(livro, maria, relogioPassado));
+        assertEquals(0, livro.getQuantidadeDisponivel());
+        assertTrue(emprestimo.isAtivo());
+
+        App app = new App(entradaSimulada("6\n52998224725\n9788535914849\n0\n"),
+                livroRepositorio, leitorRepositorio, emprestimoRepositorio);
+
+        String resultado = executar(app);
+
+        assertTrue(resultado.contains("Devolução registrada. Multa: R$ 2,00"));
+        assertEquals(1, livro.getQuantidadeDisponivel());
+        assertTrue(livro.isDisponivel());
+        assertFalse(emprestimo.isAtivo());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "6\n529.982.247-25\n978-85-359-1484-9\n0\n|Erro: Empréstimo inexistente",
+        "6\n111.444.777-35\n9788535914849\n0\n|Erro: Leitor não cadastrado",
+        "6\n529.982.247-25\n9788535911664\n0\n|Erro: Livro não cadastrado"
+    })
+    void deveMostrarErroAoDevolverSemEmprestimoAtivoENaoAlterarDisponibilidade(String caso) {
+        String[] partes = caso.split("\\|");
+        LivroRepositorio livroRepositorio = new LivroRepositorio();
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        EmprestimoRepositorio emprestimoRepositorio = new EmprestimoRepositorio();
+        Livro livro = livroRepositorio.salvar(
+                new Livro("9788535914849", "Dom Casmurro", "Machado de Assis", 1899, 1));
+        leitorRepositorio.salvar(new Leitor("52998224725", "Maria Souza", "maria@exemplo.com"));
+        App app = new App(entradaSimulada(partes[0]), livroRepositorio, leitorRepositorio, emprestimoRepositorio);
+
+        String resultado = executar(app);
+
+        assertTrue(resultado.contains(partes[1]));
+        assertFalse(resultado.contains("Devolução registrada."));
+        assertEquals(1, livro.getQuantidadeDisponivel());
+    }
+
+    @Test
+    void deveMostrarErroAoDevolverEmprestimoJaEncerrado() {
+        LivroRepositorio livroRepositorio = new LivroRepositorio();
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        EmprestimoRepositorio emprestimoRepositorio = new EmprestimoRepositorio();
+        Livro livro = livroRepositorio.salvar(
+                new Livro("9788535914849", "Dom Casmurro", "Machado de Assis", 1899, 1));
+        Leitor maria = leitorRepositorio.salvar(
+                new Leitor("52998224725", "Maria Souza", "maria@exemplo.com"));
+        livro.retirarExemplar();
+        Emprestimo emprestimo = emprestimoRepositorio.salvar(
+                new Emprestimo(livro, maria, Clock.systemDefaultZone()));
+        emprestimo.registrarDevolucao(Clock.systemDefaultZone());
+        livro.devolverExemplar();
+
+        App app = new App(entradaSimulada("6\n52998224725\n9788535914849\n0\n"),
+                livroRepositorio, leitorRepositorio, emprestimoRepositorio);
+
+        String resultado = executar(app);
+
+        assertTrue(resultado.contains("Erro: Empréstimo já encerrado"));
+        assertFalse(resultado.contains("Devolução registrada."));
+        assertEquals(1, livro.getQuantidadeDisponivel());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"6\n", "6\n52998224725\n"})
+    void deveInterromperDevolucaoQuandoEntradaAcaba(String entrada) {
+        LivroRepositorio livroRepositorio = new LivroRepositorio();
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        EmprestimoRepositorio emprestimoRepositorio = new EmprestimoRepositorio();
+        Livro livro = livroRepositorio.salvar(
+                new Livro("9788535914849", "Dom Casmurro", "Machado de Assis", 1899, 1));
+        leitorRepositorio.salvar(new Leitor("52998224725", "Maria Souza", "maria@exemplo.com"));
+        App app = new App(entradaSimulada(entrada), livroRepositorio, leitorRepositorio, emprestimoRepositorio);
+
+        String resultado = executar(app);
+
+        assertTrue(resultado.contains("Devolução de livro"));
+        assertFalse(resultado.contains("Devolução registrada."));
+        assertFalse(resultado.contains("Erro:"));
+        assertEquals(1, livro.getQuantidadeDisponivel());
+    }
+
     private static String executarComEntrada(String entrada) {
         return executar(new App(entradaSimulada(entrada)));
     }
