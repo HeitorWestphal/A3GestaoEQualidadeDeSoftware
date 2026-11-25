@@ -17,6 +17,8 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -273,6 +275,91 @@ class AppTest {
         assertFalse(resultado.contains("Leitor cadastrado:"));
         assertFalse(resultado.contains("Erro:"));
         assertTrue(leitorRepositorio.listarTodos().isEmpty());
+    }
+
+    @Test
+    void deveEmprestarLivroPeloMenuERecusarQuandoNaoHaExemplares() {
+        LivroRepositorio livroRepositorio = new LivroRepositorio();
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        EmprestimoRepositorio emprestimoRepositorio = new EmprestimoRepositorio();
+        Livro livro = livroRepositorio.salvar(
+                new Livro("9788535914849", "Dom Casmurro", "Machado de Assis", 1899, 1));
+        leitorRepositorio.salvar(new Leitor("52998224725", "Maria Souza", "maria@exemplo.com"));
+        leitorRepositorio.salvar(new Leitor("11144477735", "João Lima", "joao@exemplo.com"));
+        App app = new App(entradaSimulada("5\n529.982.247-25\n978-85-359-1484-9\n"
+                + "5\n111.444.777-35\n9788535914849\n0\n"),
+                livroRepositorio, leitorRepositorio, emprestimoRepositorio);
+
+        String resultado = executar(app);
+
+        String dataPrevista = LocalDate.now().plusDays(Emprestimo.PRAZO_EM_DIAS)
+                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        assertTrue(resultado.contains("5 - Emprestar livro"));
+        assertTrue(resultado.contains("Empréstimo registrado: Dom Casmurro até " + dataPrevista));
+        assertTrue(resultado.contains("Erro: Livro indisponível"));
+        assertEquals(0, livro.getQuantidadeDisponivel());
+        assertEquals(1, emprestimoRepositorio.listarTodos().size());
+    }
+
+    @Test
+    void deveReduzirDisponibilidadeDeUmParaZeroAoEmprestarPeloMenu() {
+        LivroRepositorio livroRepositorio = new LivroRepositorio();
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        EmprestimoRepositorio emprestimoRepositorio = new EmprestimoRepositorio();
+        Livro livro = livroRepositorio.salvar(
+                new Livro("9788535914849", "Dom Casmurro", "Machado de Assis", 1899, 1));
+        Leitor maria = leitorRepositorio.salvar(new Leitor("52998224725", "Maria Souza", "maria@exemplo.com"));
+        assertEquals(1, livro.getQuantidadeDisponivel());
+        App app = new App(entradaSimulada("5\n52998224725\n9788535914849\n0\n"),
+                livroRepositorio, leitorRepositorio, emprestimoRepositorio);
+
+        executar(app);
+
+        assertEquals(0, livro.getQuantidadeDisponivel());
+        assertTrue(emprestimoRepositorio.buscarAtivoPorLeitorELivro(maria, livro).isPresent());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "5\n111.444.777-35\n9788535914849\n0\n|Erro: Leitor não cadastrado",
+        "5\n529.982.247-25\n9788535911664\n0\n|Erro: Livro não cadastrado"
+    })
+    void deveMostrarErroAoEmprestarComLeitorOuLivroNaoCadastrado(String caso) {
+        String[] partes = caso.split("\\|");
+        LivroRepositorio livroRepositorio = new LivroRepositorio();
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        EmprestimoRepositorio emprestimoRepositorio = new EmprestimoRepositorio();
+        Livro livro = livroRepositorio.salvar(
+                new Livro("9788535914849", "Dom Casmurro", "Machado de Assis", 1899, 1));
+        leitorRepositorio.salvar(new Leitor("52998224725", "Maria Souza", "maria@exemplo.com"));
+        App app = new App(entradaSimulada(partes[0]), livroRepositorio, leitorRepositorio, emprestimoRepositorio);
+
+        String resultado = executar(app);
+
+        assertTrue(resultado.contains(partes[1]));
+        assertFalse(resultado.contains("Empréstimo registrado:"));
+        assertEquals(1, livro.getQuantidadeDisponivel());
+        assertTrue(emprestimoRepositorio.listarTodos().isEmpty());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"5\n", "5\n52998224725\n"})
+    void deveInterromperEmprestimoQuandoEntradaAcaba(String entrada) {
+        LivroRepositorio livroRepositorio = new LivroRepositorio();
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        EmprestimoRepositorio emprestimoRepositorio = new EmprestimoRepositorio();
+        Livro livro = livroRepositorio.salvar(
+                new Livro("9788535914849", "Dom Casmurro", "Machado de Assis", 1899, 1));
+        leitorRepositorio.salvar(new Leitor("52998224725", "Maria Souza", "maria@exemplo.com"));
+        App app = new App(entradaSimulada(entrada), livroRepositorio, leitorRepositorio, emprestimoRepositorio);
+
+        String resultado = executar(app);
+
+        assertTrue(resultado.contains("Empréstimo de livro"));
+        assertFalse(resultado.contains("Empréstimo registrado:"));
+        assertFalse(resultado.contains("Erro:"));
+        assertEquals(1, livro.getQuantidadeDisponivel());
+        assertTrue(emprestimoRepositorio.listarTodos().isEmpty());
     }
 
     private static String executarComEntrada(String entrada) {
