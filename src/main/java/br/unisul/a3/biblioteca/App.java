@@ -1,5 +1,6 @@
 package br.unisul.a3.biblioteca;
 
+import br.unisul.a3.biblioteca.dominio.Emprestimo;
 import br.unisul.a3.biblioteca.dominio.Leitor;
 import br.unisul.a3.biblioteca.dominio.Livro;
 import br.unisul.a3.biblioteca.excecao.RegraNegocioException;
@@ -8,11 +9,13 @@ import br.unisul.a3.biblioteca.repositorio.LeitorRepositorio;
 import br.unisul.a3.biblioteca.repositorio.LivroRepositorio;
 import br.unisul.a3.biblioteca.servico.ConsultaAcervoService;
 import br.unisul.a3.biblioteca.servico.EmprestimoAtrasado;
+import br.unisul.a3.biblioteca.servico.EmprestimoService;
 import br.unisul.a3.biblioteca.servico.LeitorService;
 import br.unisul.a3.biblioteca.servico.LivroService;
 import br.unisul.a3.biblioteca.servico.RelatorioService;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
 
@@ -22,12 +25,14 @@ import java.util.Scanner;
 public final class App {
 
     static final String NOME_SISTEMA = "Sistema de Biblioteca";
+    private static final DateTimeFormatter FORMATO_DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final Scanner scanner;
     private final LivroService livroService;
     private final LeitorService leitorService;
     private final ConsultaAcervoService consultaAcervoService;
     private final RelatorioService relatorioService;
+    private final EmprestimoService emprestimoService;
 
     public App(InputStream entrada) {
         this(entrada, new LivroRepositorio(), new LeitorRepositorio(), new EmprestimoRepositorio());
@@ -40,6 +45,7 @@ public final class App {
         leitorService = new LeitorService(leitorRepositorio);
         consultaAcervoService = new ConsultaAcervoService(livroRepositorio);
         relatorioService = new RelatorioService(leitorRepositorio, emprestimoRepositorio);
+        emprestimoService = new EmprestimoService(livroRepositorio, leitorRepositorio, emprestimoRepositorio);
     }
 
     public static void main(String[] args) {
@@ -51,6 +57,7 @@ public final class App {
         String opcao;
         while ((opcao = lerLinha(
                 "\n1 - Cadastrar livro\n2 - Consultar acervo\n3 - Relatório de atrasos\n4 - Cadastrar leitor\n"
+                        + "5 - Emprestar livro\n"
                         + "0 - Sair\n"
                         + "Escolha uma opção: ")) != null) {
             switch (opcao) {
@@ -58,6 +65,7 @@ public final class App {
                 case "2" -> consultarAcervo();
                 case "3" -> exibirRelatorioAtrasos();
                 case "4" -> cadastrarLeitor();
+                case "5" -> emprestarLivro();
                 case "0" -> {
                     System.out.println("Encerrando o sistema.");
                     return;
@@ -102,6 +110,23 @@ public final class App {
         try {
             Leitor leitor = leitorService.cadastrar(nome, cpf, email);
             System.out.println("Leitor cadastrado: " + leitor.getNome());
+        } catch (RegraNegocioException erro) {
+            System.out.println("Erro: " + erro.getMessage());
+        }
+    }
+
+    private void emprestarLivro() {
+        System.out.println("\nEmpréstimo de livro");
+        String cpf = lerLinha("CPF do leitor: ");
+        String isbn = lerLinha("ISBN do livro: ");
+        if (cpf == null || isbn == null) {
+            return;
+        }
+
+        try {
+            Emprestimo emprestimo = emprestimoService.emprestar(cpf, isbn);
+            System.out.println("Empréstimo registrado: " + emprestimo.getLivro().getTitulo()
+                    + " até " + emprestimo.getDataPrevista().format(FORMATO_DATA));
         } catch (RegraNegocioException erro) {
             System.out.println("Erro: " + erro.getMessage());
         }
