@@ -8,12 +8,15 @@ import br.unisul.a3.biblioteca.repositorio.EmprestimoRepositorio;
 import br.unisul.a3.biblioteca.repositorio.LeitorRepositorio;
 import br.unisul.a3.biblioteca.repositorio.LivroRepositorio;
 import br.unisul.a3.biblioteca.servico.ConsultaAcervoService;
+import br.unisul.a3.biblioteca.servico.DevolucaoService;
 import br.unisul.a3.biblioteca.servico.EmprestimoAtrasado;
 import br.unisul.a3.biblioteca.servico.EmprestimoService;
 import br.unisul.a3.biblioteca.servico.LeitorService;
 import br.unisul.a3.biblioteca.servico.LivroService;
 import br.unisul.a3.biblioteca.servico.RelatorioService;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -33,6 +36,7 @@ public final class App {
     private final ConsultaAcervoService consultaAcervoService;
     private final RelatorioService relatorioService;
     private final EmprestimoService emprestimoService;
+    private final DevolucaoService devolucaoService;
 
     public App(InputStream entrada) {
         this(entrada, new LivroRepositorio(), new LeitorRepositorio(), new EmprestimoRepositorio());
@@ -46,6 +50,7 @@ public final class App {
         consultaAcervoService = new ConsultaAcervoService(livroRepositorio);
         relatorioService = new RelatorioService(leitorRepositorio, emprestimoRepositorio);
         emprestimoService = new EmprestimoService(livroRepositorio, leitorRepositorio, emprestimoRepositorio);
+        devolucaoService = new DevolucaoService(livroRepositorio, leitorRepositorio, emprestimoRepositorio);
     }
 
     public static void main(String[] args) {
@@ -58,6 +63,7 @@ public final class App {
         while ((opcao = lerLinha(
                 "\n1 - Cadastrar livro\n2 - Consultar acervo\n3 - Relatório de atrasos\n4 - Cadastrar leitor\n"
                         + "5 - Emprestar livro\n"
+                        + "6 - Devolver livro\n"
                         + "0 - Sair\n"
                         + "Escolha uma opção: ")) != null) {
             switch (opcao) {
@@ -66,6 +72,7 @@ public final class App {
                 case "3" -> exibirRelatorioAtrasos();
                 case "4" -> cadastrarLeitor();
                 case "5" -> emprestarLivro();
+                case "6" -> devolverLivro();
                 case "0" -> {
                     System.out.println("Encerrando o sistema.");
                     return;
@@ -127,6 +134,27 @@ public final class App {
             Emprestimo emprestimo = emprestimoService.emprestar(cpf, isbn);
             System.out.println("Empréstimo registrado: " + emprestimo.getLivro().getTitulo()
                     + " até " + emprestimo.getDataPrevista().format(FORMATO_DATA));
+        } catch (RegraNegocioException erro) {
+            System.out.println("Erro: " + erro.getMessage());
+        }
+    }
+
+    private void devolverLivro() {
+        System.out.println("\nDevolução de livro");
+        String cpf = lerLinha("CPF do leitor: ");
+        String isbn = lerLinha("ISBN do livro: ");
+        if (cpf == null || isbn == null) {
+            return;
+        }
+
+        try {
+            BigDecimal multa = devolucaoService.devolver(cpf, isbn);
+            if (multa.compareTo(BigDecimal.ZERO) == 0) {
+                System.out.println("Devolução registrada. Sem multa.");
+            } else {
+                System.out.println("Devolução registrada. Multa: R$ "
+                        + multa.setScale(2, RoundingMode.HALF_UP).toPlainString().replace('.', ','));
+            }
         } catch (RegraNegocioException erro) {
             System.out.println("Erro: " + erro.getMessage());
         }
