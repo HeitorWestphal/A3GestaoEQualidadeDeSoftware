@@ -483,6 +483,74 @@ class AppTest {
         assertEquals(1, livro.getQuantidadeDisponivel());
     }
 
+    @Test
+    void deveMostrarHistoricoDoLeitorComEmprestimoAtivoEDevolvido() {
+        LivroRepositorio livroRepositorio = new LivroRepositorio();
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        EmprestimoRepositorio emprestimoRepositorio = new EmprestimoRepositorio();
+        Livro domCasmurro = livroRepositorio.salvar(
+                new Livro("9788535914849", "Dom Casmurro", "Machado de Assis", 1899, 2));
+        Livro memorias = livroRepositorio.salvar(
+                new Livro("9788535911664", "Memórias Póstumas", "Machado de Assis", 1881, 2));
+        Leitor maria = leitorRepositorio.salvar(new Leitor("52998224725", "Maria Souza", "maria@exemplo.com"));
+        Clock dezDiasAtras = Clock.offset(Clock.systemDefaultZone(), Duration.ofDays(-10));
+        Emprestimo devolvido = emprestimoRepositorio.salvar(new Emprestimo(domCasmurro, maria, dezDiasAtras));
+        devolvido.registrarDevolucao(Clock.systemDefaultZone());
+        Emprestimo ativo = emprestimoRepositorio.salvar(
+                new Emprestimo(memorias, maria, Clock.systemDefaultZone()));
+
+        App app = new App(entradaSimulada("7\n529.982.247-25\n0\n"),
+                livroRepositorio, leitorRepositorio, emprestimoRepositorio);
+        String resultado = executar(app);
+
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String linhaAtivo = "Livro: Memórias Póstumas | Data do empréstimo: "
+                + ativo.getDataEmprestimo().format(formato) + " | Situação: Ativo";
+        String linhaDevolvido = "Livro: Dom Casmurro | Data do empréstimo: "
+                + devolvido.getDataEmprestimo().format(formato) + " | Situação: Devolvido";
+        assertTrue(resultado.contains("7 - Histórico do leitor"));
+        assertTrue(resultado.contains("Histórico do leitor"));
+        assertTrue(resultado.contains(linhaAtivo));
+        assertTrue(resultado.contains(linhaDevolvido));
+        assertTrue(resultado.indexOf(linhaAtivo) < resultado.indexOf(linhaDevolvido));
+        assertFalse(resultado.contains("Nenhum empréstimo encontrado."));
+    }
+
+    @Test
+    void deveMostrarMensagemQuandoLeitorNaoTemEmprestimos() {
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        leitorRepositorio.salvar(new Leitor("52998224725", "Maria Souza", "maria@exemplo.com"));
+        App app = new App(entradaSimulada("7\n52998224725\n0\n"),
+                new LivroRepositorio(), leitorRepositorio, new EmprestimoRepositorio());
+
+        String resultado = executar(app);
+
+        assertTrue(resultado.contains("Nenhum empréstimo encontrado."));
+        assertFalse(resultado.contains("Livro:"));
+    }
+
+    @Test
+    void deveMostrarErroNoHistoricoDeLeitorNaoCadastrado() {
+        LeitorRepositorio leitorRepositorio = new LeitorRepositorio();
+        leitorRepositorio.salvar(new Leitor("52998224725", "Maria Souza", "maria@exemplo.com"));
+        App app = new App(entradaSimulada("7\n111.444.777-35\n0\n"),
+                new LivroRepositorio(), leitorRepositorio, new EmprestimoRepositorio());
+
+        String resultado = executar(app);
+
+        assertTrue(resultado.contains("Erro: Leitor não cadastrado"));
+        assertFalse(resultado.contains("Nenhum empréstimo encontrado."));
+    }
+
+    @Test
+    void deveInterromperHistoricoQuandoEntradaAcaba() {
+        String resultado = executarComEntrada("7\n");
+
+        assertTrue(resultado.contains("Histórico do leitor"));
+        assertFalse(resultado.contains("Nenhum empréstimo encontrado."));
+        assertFalse(resultado.contains("Erro:"));
+    }
+
     private static String executarComEntrada(String entrada) {
         return executar(new App(entradaSimulada(entrada)));
     }
