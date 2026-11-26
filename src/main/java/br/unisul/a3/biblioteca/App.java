@@ -64,6 +64,7 @@ public final class App {
                 "\n1 - Cadastrar livro\n2 - Consultar acervo\n3 - Relatório de atrasos\n4 - Cadastrar leitor\n"
                         + "5 - Emprestar livro\n"
                         + "6 - Devolver livro\n"
+                        + "7 - Histórico do leitor\n"
                         + "0 - Sair\n"
                         + "Escolha uma opção: ")) != null) {
             switch (opcao) {
@@ -73,6 +74,7 @@ public final class App {
                 case "4" -> cadastrarLeitor();
                 case "5" -> emprestarLivro();
                 case "6" -> devolverLivro();
+                case "7" -> exibirHistoricoDoLeitor();
                 case "0" -> {
                     System.out.println("Encerrando o sistema.");
                     return;
@@ -201,6 +203,30 @@ public final class App {
                     + " | Leitor: " + atraso.emprestimo().getLeitor().getNome()
                     + " | Dias de atraso: " + atraso.diasAtraso()
                     + " | Multa prevista: R$ " + atraso.multaPrevista().toPlainString().replace('.', ','));
+        }
+    }
+
+    private void exibirHistoricoDoLeitor() {
+        System.out.println("\nHistórico do leitor");
+        String cpf = lerLinha("CPF do leitor: ");
+        if (cpf == null) {
+            return;
+        }
+
+        try {
+            List<Emprestimo> historico = relatorioService.listarHistoricoDoLeitor(cpf);
+            if (historico.isEmpty()) {
+                System.out.println("Nenhum empréstimo encontrado.");
+                return;
+            }
+            for (Emprestimo emprestimo : historico) {
+                String situacao = emprestimo.isAtivo() ? "Ativo" : "Devolvido";
+                System.out.println("Livro: " + emprestimo.getLivro().getTitulo()
+                        + " | Data do empréstimo: " + emprestimo.getDataEmprestimo().format(FORMATO_DATA)
+                        + " | Situação: " + situacao);
+            }
+        } catch (RegraNegocioException erro) {
+            System.out.println("Erro: " + erro.getMessage());
         }
     }
 
